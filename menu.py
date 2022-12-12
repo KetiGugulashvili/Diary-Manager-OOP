@@ -3,15 +3,14 @@ import json
 
 from diarybook import Diary, DiaryBook
 from util import read_from_json_into_application
+from user import User
 
 
 class Menu:
 
     def __init__(self):
         self.diarybook = DiaryBook()
-        self.email = ""
-        self.password = ""
-        self.data = {}
+        self.user = User()
         self.choices = {
             "1": self.show_diaries,
             "2": self.add_diary,
@@ -33,34 +32,7 @@ class Menu:
                     """)
 
     def run(self):
-        while True:
-            log_in = input("1.Register\n2.Log in\nEnter an option: ")
-            if log_in == "1":
-                self.email = input("Please, register.\nEmail: ")
-                self.password = input("Password: ")
-                with open("user.json") as user:
-                    self.data = json.loads(user.read())
-                with open("user.json", "w") as user:
-                    self.data[f"{self.email}"] = {"Password": self.password, "Diaries": []}
-                    json.dump(self.data, user)
-                break
-            elif log_in == "2":
-                self.email = input("Please, log in.\nEmail: ")
-                self.password = input("Password: ")
-                user = open("user.json")
-                self.data = json.loads(user.read())
-                checking_correct = False
-                for users in self.data:
-                    if self.email == users:
-                        if self.password == self.data[self.email]["Password"]:
-                            checking_correct = True
-                            for diary in self.data[self.email]["Diaries"]:
-                                self.diarybook.new_diary(diary["memo"], diary["tags"])
-                        else:
-                            print("Incorrect password.")
-                if checking_correct:
-                    break
-                print("Such user does not exist.")
+        self.user.log_in()
 
         while True:
             self.display_menu()
@@ -82,7 +54,7 @@ class Menu:
         tags = input("add tags:             ")
         self.diarybook.new_diary(memo, tags)
         diaries = self.diarybook.diaries
-        self.data[f"{self.email}"]["Diaries"].append({"memo": diaries[-1].memo, "tags": diaries[-1].tags})
+        self.user.data[f"{self.user.email}"]["Diaries"].append({"memo": diaries[-1].memo, "tags": diaries[-1].tags})
         print("Your note has been added")
 
     def search_diaries(self):
@@ -109,7 +81,7 @@ class Menu:
 
     def quit(self):
         with open("user.json", "w") as user:
-            json.dump(self.data, user)
+            json.dump(self.user.data, user)
         print("Thank you for using diarybook today")
         sys.exit(0)
 
